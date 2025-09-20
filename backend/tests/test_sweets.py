@@ -35,4 +35,4 @@ def test_add_and_list_sweets(client):
     # Delete sweet
     response = client.delete(f"/sweets/{sweet_id}",
                              headers={"Authorization": f"Bearer {token}"})
-    assert response.status_code == 200
+    assert response.status_code == 204
