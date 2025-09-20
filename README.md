@@ -44,7 +44,7 @@ The project emphasizes **clean, maintainable code**, **high test coverage**, and
 
 ## Tech Stack
 - **Backend:** Python, Flask, SQLite/MongoDB
-- **Frontend:** HTML, CSS, JavaScript (or React)
+- **Frontend:** React,Tailwind
 - **Testing:** PyTest (or Jest for frontend)
 - **Version Control:** Git
 
@@ -55,8 +55,8 @@ The project emphasizes **clean, maintainable code**, **high test coverage**, and
 ### Backend
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/sweetshop.git
-   cd sweetshop
+   git clone https://github.com/naveennekkanti1/Incubyte.git
+   cd backend
    ```
 2. Create a virtual environment:
    ```bash
@@ -69,7 +69,7 @@ The project emphasizes **clean, maintainable code**, **high test coverage**, and
    ```
 4. Run the backend server:
    ```bash
-   flask run
+   python app.py
    ```
    Backend runs on [http://localhost:5000](http://localhost:5000)
 
@@ -116,10 +116,12 @@ pytest --cov=app
 **Folder structure suggestion:**
 ```
 screenshots/
-  homepage.png
-  catalog.png
-  cart_checkout.png
-  admin_dashboard.png
+  Home.jpg
+  Admin_dashboard.jpg
+  admin_purchase_history.jpg
+  customer_purchase_history.jpg
+  Login.jpg
+  register.jpg
 ```
 
 ---
@@ -135,16 +137,6 @@ I used AI tools to improve productivity while maintaining transparency and respo
 **Reflection:**  
 AI tools accelerated initial development and test writing. However, manual verification, refactoring, and adherence to TDD and clean coding principles were crucial to ensure high-quality, maintainable code.
 
----
-
-## Deployment
-
-The Sweetshop application can be deployed on platforms like Heroku, Vercel, or Netlify.
-
-**Live demo link:**  
-_Deployed Sweetshop App (replace with actual URL)_
-
----
 
 ## Git & Version Control Guidelines
 
