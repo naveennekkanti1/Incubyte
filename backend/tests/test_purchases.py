@@ -26,7 +26,7 @@ def test_purchase_flow(client):
         "quantity": 2
     }, headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 201
-    assert response.get_json()["msg"] == "Purchase has done successful"
+    assert response.get_json()["msg"] == "Purchase successful"
 
     # Get purchase history
     response = client.get("/api/purchases/history",
