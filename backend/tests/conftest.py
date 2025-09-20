@@ -9,7 +9,7 @@ def client():
 
     # Replace Mongo with mongomock
     mongo.cx = mongomock.MongoClient()
-    mongo.db = mongo.cx["test_db"]
+    mongo.db = mongo.cx["sweetshop_test"]
 
     with app.test_client() as client:
         yield client
