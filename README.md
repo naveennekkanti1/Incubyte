@@ -14,9 +14,8 @@ A full-stack Sweetshop management application designed to streamline inventory, 
 5. [Testing](#testing)
 6. [Screenshots](#screenshots)
 7. [My AI Usage](#my-ai-usage)
-8. [Deployment](#deployment)
-9. [Git & Version Control Guidelines](#git--version-control-guidelines)
-10. [License](#license)
+8. [Git & Version Control Guidelines](#git--version-control-guidelines)
+9. [License](#license)
 
 ---
 
@@ -109,9 +108,10 @@ pytest --cov=app
 > Replace these placeholders with your actual screenshots
 
 - **Homepage**
-- **Product Catalog**
-- **Cart & Checkout**
+- **Customer Dashboard**
+- **Purchase History**
 - **Admin Dashboard**
+- **Login and Register**
 
 **Folder structure suggestion:**
 ```
