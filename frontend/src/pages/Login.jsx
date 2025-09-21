@@ -400,14 +400,6 @@ export default function Login() {
                   />
                   Remember me
                 </label>
-                <button
-                  type="button"
-                  style={styles.forgotLink}
-                  onMouseEnter={(e) => e.target.style.color = 'white'}
-                  onMouseLeave={(e) => e.target.style.color = 'rgba(255, 255, 255, 0.8)'}
-                >
-                  Forgot password?
-                </button>
               </div>
 
               <button
