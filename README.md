@@ -12,6 +12,7 @@ A full-stack Sweetshop management application designed to streamline inventory, 
    - [Backend](#backend)
    - [Frontend](#frontend)
 5. [Testing](#testing)
+6.[TestCreds](#testcreds)
 6. [Screenshots](#screenshots)
 7. [My AI Usage](#my-ai-usage)
 8. [Git & Version Control Guidelines](#git--version-control-guidelines)
@@ -101,6 +102,17 @@ pytest --cov=app
 - Aim for high coverage and meaningful test scenarios.
 - Ensure both unit and integration tests pass before committing.
 
+---
+
+
+## TestCreds
+```
+- Admin
+  - username: admin  password: Admin@123
+-Test User
+  - username: testuser password: Test@123
+
+```
 ---
 
 ## Screenshots
