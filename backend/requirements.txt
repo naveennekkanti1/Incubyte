@@ -7,3 +7,13 @@ pytest
 pytest-flask
 coverage
 flask-mail
+useragents
+email-validator
+Flask-Limiter
+Flask-Cors
+itsdangerous
+Jinja2
+MarkupSafe
+Werkzeug
+gunicorn
+user-agents
