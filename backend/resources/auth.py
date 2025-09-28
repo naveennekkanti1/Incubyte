@@ -304,6 +304,15 @@ def register():
     token = create_access_token(identity=str(inserted.inserted_id), expires_delta=timedelta(hours=1))
     return jsonify({"access_token": token}), 201
 
+from threading import Thread
+from flask import current_app
+
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+# Inside login route, instead of mail.send(msg):
+Thread(target=send_async_email, args=(current_app._get_current_object(), msg)).start()
 
 import user_agents
 
