@@ -14,7 +14,9 @@ load_dotenv()
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
-    CORS(app,origins="https://incubyte-alpha.vercel.app", supports_credentials=True)
+
+    # Apply CORS globally
+    CORS(app, resources={r"/api/*": {"origins": "https://incubyte-alpha.vercel.app"}}, supports_credentials=True)
 
     mongo.init_app(app)
     jwt.init_app(app)
@@ -26,6 +28,7 @@ def create_app():
     app.register_blueprint(purchases_bp, url_prefix="/api/purchases")
 
     return app
+
 
 if __name__ == "__main__":
     app = create_app()
