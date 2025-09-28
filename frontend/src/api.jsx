@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://127.0.0.1:5000/api",
+  baseURL: "https://incubyte-9rtg.onrender.com/api",
 });
 
 // Attach token if present
