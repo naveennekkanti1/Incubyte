@@ -1,17 +1,74 @@
-import { useState, useContext } from "react";
-import { Eye, EyeOff, User, Lock, AlertCircle } from "lucide-react";
+import { useState, useContext, useEffect } from "react";
+import { Eye, EyeOff, User, Lock, AlertCircle, MapPin, Loader2, Shield } from "lucide-react";
 import API from "../api";
 import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
-  const [form, setForm] = useState({ username: "", password: "" });
+  const [form, setForm] = useState({ username: "", password: "", rememberMe: false });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [location, setLocation] = useState({ latitude: null, longitude: null });
+  const [locationStatus, setLocationStatus] = useState("requesting");
   const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  // Check if user is already logged in and handle remember me
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userRole = localStorage.getItem('userRole');
+    const rememberUser = localStorage.getItem('rememberUser');
+    const rememberMe = localStorage.getItem('rememberMe');
+    
+    // If user is already logged in, redirect
+    if (token && userRole) {
+      if (userRole === 'admin') {
+        navigate('/admin-dashboard');
+      } else {
+        navigate('/dashboard');
+      }
+      return;
+    }
+    
+    // If remember me was checked, prefill username
+    if (rememberMe === 'true' && rememberUser) {
+      setForm(prev => ({
+        ...prev,
+        username: rememberUser,
+        rememberMe: true
+      }));
+    }
+  }, [navigate]);
+
+  // Get user location on component mount
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          });
+          setLocationStatus("granted");
+        },
+        (error) => {
+          console.log("Location access denied:", error);
+          setLocationStatus("denied");
+        },
+        { timeout: 10000 }
+      );
+    } else {
+      setLocationStatus("error");
+    }
+  }, []);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setForm({ 
+      ...form, 
+      [name]: type === 'checkbox' ? checked : value 
+    });
     if (error) setError("");
   };
 
@@ -21,12 +78,68 @@ export default function Login() {
     setError("");
     
     try {
-      const res = await API.post("/auth/login", form);
+      const loginData = {
+        username: form.username,
+        password: form.password,
+        latitude: location.latitude,
+        longitude: location.longitude
+      };
+
+      const res = await API.post("/auth/login", loginData);
+      
+      // Store token and user info
+      localStorage.setItem('token', res.data.access_token);
+      localStorage.setItem('userRole', res.data.role);
+      
+      // Update auth context
       login(res.data.access_token, res.data.role);
+      
+      // Handle remember me
+      if (form.rememberMe) {
+        localStorage.setItem('rememberUser', form.username);
+        localStorage.setItem('rememberMe', 'true');
+      } else {
+        localStorage.removeItem('rememberUser');
+        localStorage.removeItem('rememberMe');
+      }
+      
+      // Redirect based on role
+      if (res.data.role === 'admin') {
+        navigate('/admin-dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
-      setError("Invalid username or password. Please try again.");
+      const errorMessage = err.response?.data?.msg || "Invalid username or password. Please try again.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getLocationIcon = () => {
+    switch (locationStatus) {
+      case "requesting":
+        return <Loader2 size={16} style={{color: "#60A5FA", animation: "spin 1s linear infinite"}} />;
+      case "granted":
+        return <MapPin size={16} style={{color: "#10B981"}} />;
+      case "denied":
+        return <Shield size={16} style={{color: "#F59E0B"}} />;
+      default:
+        return <Shield size={16} style={{color: "#6B7280"}} />;
+    }
+  };
+
+  const getLocationText = () => {
+    switch (locationStatus) {
+      case "requesting":
+        return "Requesting location for security...";
+      case "granted":
+        return "Location detected - Enhanced security active";
+      case "denied":
+        return "Location access denied - Basic security mode";
+      default:
+        return "Location unavailable";
     }
   };
 
@@ -54,7 +167,9 @@ export default function Login() {
       width: '320px',
       height: '320px',
       background: 'rgba(255, 255, 255, 0.1)',
-      borderRadius: '50%'
+      borderRadius: '50%',
+      filter: 'blur(60px)',
+      animation: 'pulse 4s ease-in-out infinite'
     },
     backgroundDecor2: {
       position: 'absolute',
@@ -63,7 +178,10 @@ export default function Login() {
       width: '320px',
       height: '320px',
       background: 'rgba(255, 255, 255, 0.1)',
-      borderRadius: '50%'
+      borderRadius: '50%',
+      filter: 'blur(60px)',
+      animation: 'pulse 4s ease-in-out infinite',
+      animationDelay: '2s'
     },
     backgroundDecor3: {
       position: 'absolute',
@@ -72,7 +190,9 @@ export default function Login() {
       width: '200px',
       height: '200px',
       background: 'rgba(255, 255, 255, 0.05)',
-      borderRadius: '50%'
+      borderRadius: '50%',
+      filter: 'blur(40px)',
+      animation: 'float 6s ease-in-out infinite'
     },
     cardContainer: {
       width: '100%',
@@ -88,13 +208,14 @@ export default function Login() {
       width: '100%',
       maxWidth: '420px',
       background: 'rgba(255, 255, 255, 0.1)',
-      backdropFilter: 'blur(16px)',
+      backdropFilter: 'blur(20px)',
       border: '1px solid rgba(255, 255, 255, 0.2)',
       borderRadius: '20px',
       boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
       padding: '32px',
       zIndex: 10,
-      boxSizing: 'border-box'
+      boxSizing: 'border-box',
+      transition: 'transform 0.3s ease'
     },
     header: {
       textAlign: 'center',
@@ -108,18 +229,36 @@ export default function Login() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      margin: '0 auto 16px'
+      margin: '0 auto 16px',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
     },
     title: {
       fontSize: '30px',
       fontWeight: 'bold',
       color: 'white',
-      margin: '0 0 8px'
+      margin: '0 0 8px',
+      textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
     },
     subtitle: {
       color: 'rgba(255, 255, 255, 0.8)',
       margin: 0,
       fontSize: '16px'
+    },
+    locationStatus: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: '20px',
+      padding: '12px 16px',
+      background: 'rgba(255, 255, 255, 0.08)',
+      borderRadius: '12px',
+      border: '1px solid rgba(255, 255, 255, 0.12)'
+    },
+    locationText: {
+      marginLeft: '8px',
+      fontSize: '13px',
+      color: 'rgba(255, 255, 255, 0.75)',
+      fontWeight: '500'
     },
     errorBox: {
       marginBottom: '24px',
@@ -129,7 +268,8 @@ export default function Login() {
       borderRadius: '12px',
       display: 'flex',
       alignItems: 'center',
-      color: 'rgba(254, 226, 226, 1)'
+      color: 'rgba(254, 226, 226, 1)',
+      backdropFilter: 'blur(10px)'
     },
     errorIcon: {
       marginRight: '8px',
@@ -166,7 +306,8 @@ export default function Login() {
       fontSize: '16px',
       outline: 'none',
       transition: 'all 0.2s',
-      boxSizing: 'border-box'
+      boxSizing: 'border-box',
+      backdropFilter: 'blur(10px)'
     },
     passwordInput: {
       paddingRight: '48px'
@@ -181,7 +322,10 @@ export default function Login() {
       color: 'rgba(255, 255, 255, 0.6)',
       cursor: 'pointer',
       padding: '4px',
-      transition: 'color 0.2s'
+      transition: 'color 0.2s',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
     },
     rememberRow: {
       display: 'flex',
@@ -196,12 +340,14 @@ export default function Login() {
       display: 'flex',
       alignItems: 'center',
       color: 'rgba(255, 255, 255, 0.8)',
-      cursor: 'pointer'
+      cursor: 'pointer',
+      transition: 'color 0.2s'
     },
     checkbox: {
       marginRight: '8px',
       width: '16px',
-      height: '16px'
+      height: '16px',
+      accentColor: '#a855f7'
     },
     forgotLink: {
       color: 'rgba(255, 255, 255, 0.8)',
@@ -226,7 +372,9 @@ export default function Login() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      minHeight: '50px'
+      minHeight: '52px',
+      boxShadow: '0 4px 14px 0 rgba(0, 0, 0, 0.1)',
+      transform: 'scale(1)'
     },
     loadingSpinner: {
       width: '20px',
@@ -255,6 +403,20 @@ export default function Login() {
       textDecoration: 'none',
       transition: 'text-decoration 0.2s',
       marginLeft: '4px'
+    },
+    securityNote: {
+      textAlign: 'center',
+      marginTop: '20px',
+      padding: '12px',
+      background: 'rgba(255, 255, 255, 0.05)',
+      borderRadius: '8px',
+      border: '1px solid rgba(255, 255, 255, 0.1)'
+    },
+    securityText: {
+      fontSize: '12px',
+      color: 'rgba(255, 255, 255, 0.65)',
+      margin: 0,
+      fontWeight: '500'
     }
   };
 
@@ -279,6 +441,16 @@ export default function Login() {
             100% { transform: rotate(360deg); }
           }
           
+          @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+          }
+          
+          @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+          }
+          
           input::placeholder {
             color: rgba(255, 255, 255, 0.6);
           }
@@ -294,9 +466,25 @@ export default function Login() {
             transform: translateY(-1px);
           }
           
+          button:active:not(:disabled) {
+            transform: translateY(0px) scale(0.98);
+          }
+          
           button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+          }
+          
+          .card:hover {
+            transform: scale(1.02);
+          }
+          
+          .remember-label:hover {
+            color: white;
+          }
+          
+          .password-toggle:hover {
+            color: white !important;
           }
           
           @media (max-width: 768px) {
@@ -343,6 +531,12 @@ export default function Login() {
               <p style={styles.subtitle}>Sign in to your account</p>
             </div>
 
+            {/* Location Status */}
+            <div style={styles.locationStatus}>
+              {getLocationIcon()}
+              <span style={styles.locationText}>{getLocationText()}</span>
+            </div>
+
             {error && (
               <div style={styles.errorBox}>
                 <AlertCircle size={20} style={styles.errorIcon} />
@@ -384,8 +578,7 @@ export default function Login() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     style={styles.passwordToggle}
-                    onMouseEnter={(e) => e.target.style.color = 'white'}
-                    onMouseLeave={(e) => e.target.style.color = 'rgba(255, 255, 255, 0.6)'}
+                    className="password-toggle"
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
@@ -393,13 +586,24 @@ export default function Login() {
               </div>
 
               <div style={styles.rememberRow} className="remember-row">
-                <label style={styles.rememberLabel}>
+                <label style={styles.rememberLabel} className="remember-label">
                   <input
                     type="checkbox"
+                    name="rememberMe"
+                    checked={form.rememberMe}
+                    onChange={handleChange}
                     style={styles.checkbox}
                   />
                   Remember me
                 </label>
+                <button
+                  type="button"
+                  style={styles.forgotLink}
+                  onMouseEnter={(e) => e.target.style.color = 'white'}
+                  onMouseLeave={(e) => e.target.style.color = 'rgba(255, 255, 255, 0.8)'}
+                >
+                  Forgot password?
+                </button>
               </div>
 
               <button
@@ -429,6 +633,13 @@ export default function Login() {
                 >
                   Sign up
                 </a>
+              </p>
+            </div>
+
+            {/* Security Note */}
+            <div style={styles.securityNote}>
+              <p style={styles.securityText}>
+                🔒 Enhanced security with location tracking and device detection
               </p>
             </div>
           </div>
