@@ -14,7 +14,7 @@ load_dotenv()
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
-    CORS(app,origins="http://localhost:3000", supports_credentials=True)
+    CORS(app,origins="https://incubyte-alpha.vercel.app", supports_credentials=True)
 
     mongo.init_app(app)
     jwt.init_app(app)
